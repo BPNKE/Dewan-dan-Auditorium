@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <title>Kalkulator Auditorium (GPP 2024)</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 900px; margin: auto; }
+    h2 { color: #004080; }
+    label { display: block; margin-top: 10px; }
+    input, select { padding: 5px; margin-top: 5px; }
+    .section-title { margin-top: 20px; font-weight: bold; color: #333; }
+    table {
+      margin-top: 20px;
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+    table, th, td { border: 1px solid #999; }
+    th, td { padding: 10px; word-wrap: break-word; }
+    th:nth-child(1), td:nth-child(1) { width: 5%; text-align: center; }
+    th:nth-child(2), td:nth-child(2) { width: 35%; }
+    th:nth-child(3), td:nth-child(3) { width: 20%; text-align: center; }
+    th:nth-child(4), td:nth-child(4) { width: 20%; text-align: center; }
+    th:nth-child(5), td:nth-child(5) { width: 20%; text-align: right; }
+    .highlight-warning { background-color: #ffdddd; color: #b30000; font-weight: bold; }
+    button { margin-top: 15px; margin-right: 10px; padding: 8px 15px; background: #004080; color: #fff; border: none; cursor: pointer; border-radius: 5px; }
+    button:hover { background-color: #0066cc; }
+    #dynamicTitle { text-align: center; font-weight: bold; margin-top: 20px; margin-bottom: 10px; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printable, #printable * { visibility: visible; }
+      #printable { position: absolute; top: 0; left: 0; width: 100%; }
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<h2>Kalkulator Auditorium Dan Dewan (GPP 2024)</h2>
+
+<p>
+  <label><input type="radio" name="mode_type" id="mode_auditorium" value="auditorium" checked onchange="toggleMode()"> Auditorium / Dewan Jadual A2.0 (1)</label>
+  <label><input type="radio" name="mode_type" id="mode_sports" value="sukan" onchange="toggleMode()"> Dewan Sukan Jadual A2.0 (2)</label>
+</p>
+
+<div id="sportsOptions" style="display:none">
+  <label for="sports_type">Pilih Jenis Dewan Sukan:
+    <select id="sports_type">
+      <option value="960">Dua (2) gelanggang badminton</option>
+      <option value="1620">Tiga (3) gelanggang badminton / satu (1) gelanggang bola keranjang</option>
+      <option value="2700">Enam (6) gelanggang badminton / dua (2) gelanggang bola keranjang / satu (1) gelanggang bola jaring / satu (1) gelanggang futsal</option>
+    </select>
+  </label>
+</div>
+
+<div id="auditoriumInputs">
+  <label>Bilangan Tempat Duduk: <input type="number" id="bil_seat" value="0"></label>
+  <label>Jenis Tempat Duduk:
+    <select id="seat_type">
+      <option value="1.0">1.0 m² per tempat duduk</option>
+      <option value="1.9">1.9 m² per tempat duduk</option>
+      <option value="2.3">2.3 m² per tempat duduk</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="chk_legar" checked> Ruang Legar (0.4 m² per tempat duduk)</label>
+  <label><input type="checkbox" id="chk_sokongan" checked> Ruang Sokongan:
+    <select id="val_sokongan">
+      <option value="0.4">0.4 m²</option>
+      <option value="0.5">0.5 m²</option>
+      <option value="0.6">0.6 m²</option>
+      <option value="0.7">0.7 m²</option>
+      <option value="0.75">0.75 m²</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="chk_bilikair" checked> Bilik Air:
+    <select id="val_bilikair">
+      <option value="0.1">0.1 m²</option>
+      <option value="0.11">0.11 m²</option>
+      <option value="0.12">0.12 m²</option>
+      <option value="0.13">0.13 m²</option>
+      <option value="0.14">0.14 m²</option>
+      <option value="0.15">0.15 m²</option>
+    </select>
+  </label>
+  <div class="section-title">Ruang Sirkulasi & Servis</div>
+  <label><input type="radio" name="add_option" id="use_default" checked> Sirkulasi (25%) + Servis (10%)</label>
+  <label><input type="radio" name="add_option" id="use_custom"> Custom (%): 
+    <input type="number" id="custom_percent" value="0" min="0" max="100" disabled></label>
+</div>
+
+<div id="printable">
+  <p id="customWarning" class="highlight-warning" style="display: none;">
+    ⚠️ Amaran: Jumlah peratusan sirkulasi + servis melebihi 35%!
+  </p>
+  <h3 id="dynamicTitle"></h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Bil.</th>
+        <th>Komponen</th>
+        <th>Bilangan</th>
+        <th>Pekali (m²)</th>
+        <th>Keluasan (m²)</th>
+      </tr>
+    </thead>
+    <tbody id="resultTable">
+      <tr><td colspan="5">Sila pilih jenis mod dan input yang berkaitan.</td></tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4"><strong>Jumlah Keluasan</strong></td>
+        <td id="totalArea" style="text-align: right;">0.00 m²</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<button onclick="window.print()">Cetak</button>
+<button onclick="downloadPDF()">Muat Turun PDF</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  function toggleMode() {
+    const isSports = document.getElementById('mode_sports').checked;
+    document.getElementById('sportsOptions').style.display = isSports ? 'block' : 'none';
+    document.getElementById('auditoriumInputs').style.display = isSports ? 'none' : 'block';
+    updateCalculation();
+  }
+
+  function updateCalculation() {
+    const isSports = document.getElementById('mode_sports').checked;
+    const tbody = document.getElementById('resultTable');
+    let total = 0;
+    let subtotal = 0;
+    tbody.innerHTML = '';
+    const warning = document.getElementById("customWarning");
+    warning.style.display = "none";
+
+    if (isSports) {
+      const select = document.getElementById('sports_type');
+      const gfa = parseInt(select.value || 0);
+      const selectedText = select.options[select.selectedIndex].text;
+      let label = 'Dewan Sukan';
+      if (selectedText.includes('Dua')) label += ' 2 Gelanggang';
+      else if (selectedText.includes('Tiga')) label += ' 3 Gelanggang';
+      else if (selectedText.includes('Enam')) label += ' 6 Gelanggang';
+
+      total = gfa;
+      document.getElementById('dynamicTitle').textContent = label;
+      tbody.innerHTML = `<tr><td>1</td><td>${label}</td><td>-</td><td>-</td><td>${gfa.toFixed(2)}</td></tr>`;
+    } else {
+      document.getElementById('dynamicTitle').textContent = "Auditorium / Dewan (Jadual A2.0(1))";
+      const seatCount = parseInt(document.getElementById('bil_seat').value || 0);
+      const seatFactor = parseFloat(document.getElementById('seat_type').value);
+      const data = [];
+      let bil = 1;
+
+      if (seatCount > 0) {
+        data.push(['Tempat Duduk', seatCount, seatFactor, seatCount * seatFactor]);
+        if (document.getElementById('chk_legar').checked) data.push(['Ruang Legar', seatCount, 0.4, seatCount * 0.4]);
+        if (document.getElementById('chk_sokongan').checked) {
+          const sokongan = parseFloat(document.getElementById('val_sokongan').value);
+          data.push(['Ruang Sokongan', seatCount, sokongan, seatCount * sokongan]);
+        }
+        if (document.getElementById('chk_bilikair').checked) {
+          const bilikAir = parseFloat(document.getElementById('val_bilikair').value);
+          data.push(['Bilik Air', seatCount, bilikAir, seatCount * bilikAir]);
+        }
+
+        data.forEach(([label, count, factor, area]) => {
+          total += area;
+          tbody.innerHTML += `<tr><td>${bil++}</td><td>${label}</td><td>${count}</td><td>${factor}</td><td>${area.toFixed(2)}</td></tr>`;
+        });
+
+        subtotal = total;
+        tbody.innerHTML += `<tr><td colspan="4"><strong>Jumlah Sebelum Sirkulasi dan Servis</strong></td><td><strong>${subtotal.toFixed(2)}</strong></td></tr>`;
+
+        let extra = 0;
+        if (document.getElementById('use_default').checked) {
+          const sirkulasi = total * 0.25;
+          const servis = total * 0.10;
+          extra += sirkulasi + servis;
+          tbody.innerHTML += `<tr><td>${bil++}</td><td>Sirkulasi</td><td>-</td><td>25%</td><td>${sirkulasi.toFixed(2)}</td></tr>`;
+          tbody.innerHTML += `<tr><td>${bil++}</td><td>Servis</td><td>-</td><td>10%</td><td>${servis.toFixed(2)}</td></tr>`;
+        } else if (document.getElementById('use_custom').checked) {
+          const customPercent = parseFloat(document.getElementById('custom_percent').value || 0);
+          if (customPercent > 35) warning.style.display = "block";
+          const custom = total * (customPercent / 100);
+          extra += custom;
+          tbody.innerHTML += `<tr><td>${bil++}</td><td>Tambahan Custom Sirkulasi + Servis</td><td>-</td><td>${customPercent}%</td><td>${custom.toFixed(2)}</td></tr>`;
+        }
+
+        total += extra;
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5">Sila masukkan bilangan tempat duduk.</td></tr>';
+      }
+    }
+
+    document.getElementById('totalArea').textContent = total.toFixed(2) + ' m²';
+    document.getElementById('totalArea').classList.toggle('highlight-warning', total > 2000);
+  }
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const titleElement = document.getElementById("dynamicTitle");
+    const pdfTitle = titleElement.textContent;
+    const element = document.getElementById("printable");
+
+    const canvas = await html2canvas(element, { scale: 3, useCORS: true });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgProps = pdf.getImageProperties(imgData);
+    const imgWidth = pageWidth - 20;
+    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+    pdf.setFontSize(12);
+    pdf.text(pdfTitle, 10, 10);
+    pdf.addImage(imgData, "PNG", 10, 15, imgWidth, imgHeight);
+
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10);
+    pdf.save(`kiraan_${pdfTitle.replace(/\s+/g, '_')}_${dateStr}.pdf`);
+  }
+
+  document.getElementById('use_custom').addEventListener('change', () => {
+    document.getElementById('custom_percent').disabled = !document.getElementById('use_custom').checked;
+  });
+  document.getElementById('use_default').addEventListener('change', () => {
+    document.getElementById('custom_percent').disabled = true;
+  });
+
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', updateCalculation);
+    el.addEventListener('change', updateCalculation);
+  });
+
+  window.onload = updateCalculation;
+</script>
+
+</body>
+</html>
