@@ -37,7 +37,7 @@
 </head>
 <body>
 
-<h2>Kalkulator Auditorium Dan Dewan (GPP 2024)</h2>
+<h2 style="background-color: rgb(178, 232, 245);">Kalkulator Auditorium Dan Dewan (GPP 2024)</h2>
 
 <p>
   <label><input type="radio" name="mode_type" id="mode_auditorium" value="auditorium" checked onchange="toggleMode()"> Auditorium / Dewan Jadual A2.0 (1)</label>
@@ -55,7 +55,7 @@
 </div>
 
 <div id="auditoriumInputs">
-  <label>Bilangan Tempat Duduk: <input type="number" id="bil_seat" value="0"></label>
+  <label>Bilangan Tempat Duduk: <input type="number" id="bil_seat" value="0" style="background-color: rgb(198, 240, 148);"></label>
   <label>Jenis Tempat Duduk:
     <select id="seat_type">
       <option value="1.0">1.0 m² per tempat duduk</option>
@@ -85,7 +85,7 @@
   </label>
   <div class="section-title">Ruang Sirkulasi & Servis</div>
   <label><input type="radio" name="add_option" id="use_default" checked> Sirkulasi (25%) + Servis (10%)</label>
-  <label><input type="radio" name="add_option" id="use_custom"> Custom (%): 
+  <label><input type="radio" name="add_option" id="use_custom">Ruang Sirkulasi + Servis Manual (%): 
     <input type="number" id="custom_percent" value="0" min="0" max="100" disabled></label>
 </div>
 
